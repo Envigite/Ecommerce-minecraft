@@ -1,4 +1,4 @@
-import { pool } from "../config/db.js";
+import { pool } from "../config/db";
 
 export const UserModel = {
   findByEmailOrUsername: async (email: string, username: string) => {
@@ -68,13 +68,13 @@ export const UserModel = {
 
   getUserById: async (id: string) => {
     const result = await pool.query(
-      "SELECT username, email FROM users WHERE id = $1",
+      "SELECT id, username, email, role FROM users WHERE id = $1",
       [id]
     );
     return result.rows[0] ?? null;
   },
 
-  updateUser: async (id: string | undefined, username: string, password?: string) => {
+  updateUser: async (id: string | undefined, username?: string, password?: string) => {
     const updates: string[] = [];
     const values: any[] = [id];
 

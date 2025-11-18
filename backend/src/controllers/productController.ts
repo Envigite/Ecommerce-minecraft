@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import { productSchema } from "../schemas/productSchema.js";
-import { ProductModel } from "../models/productModel.js";
+import { productSchema } from "../schemas/productSchema";
+import { ProductModel } from "../models/productModel";
 
 export const listProducts = async (_req: Request, res: Response) => {
   try {

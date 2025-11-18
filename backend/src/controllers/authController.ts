@@ -1,11 +1,11 @@
 import type { Request, Response } from "express";
-import { registerSchema, loginSchema, updateUserSchema } from "../schemas/authSchema.js";
+import { registerSchema, loginSchema, updateUsernameSchema, updatePasswordSchema } from "../schemas/authSchema";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { UserModel } from "../models/userModel.js";
-import type { LoginBody, RegisterBody } from "../types/auth.js";
-import { isProduction } from "../utils/env.js";
-import type { AuthRequest } from "../middlewares/authMiddleware.js";
+import { UserModel } from "../models/userModel";
+import type { LoginBody, RegisterBody } from "../types/auth";
+import { isProduction } from "../utils/env";
+import type { AuthRequest } from "../middlewares/authMiddleware";
 
 const JWT_SECRET: string = process.env.JWT_SECRET!;
 const JWT_EXPIRES_IN: string = process.env.JWT_EXPIRES_IN || "30d";
@@ -59,7 +59,6 @@ export const registerUser = async (
       secure: isProduction,
       sameSite: "lax",
       maxAge: 1000 * 60 * 60 * 24 * 30, //30 días
-      domain: "localhost",
       path: "/",
     });
 
@@ -111,7 +110,6 @@ export const loginUser = async (
       secure: isProduction,
       sameSite: "lax",
       maxAge: 1000 * 60 * 60 * 24 * 30, //30 días
-      domain: "localhost",
       path: "/",
     });
 
@@ -155,29 +153,50 @@ export const getUserProfile = async (req: AuthRequest, res: Response) => {
 };
 
 // ---------------- UPDATE ----------------
-export const updateUserProfile = async (req: AuthRequest, res: Response) => {
+export const updateUsernameController = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
+    const parsed = updateUsernameSchema.safeParse(req.body);
 
-    const parseResult = updateUserSchema.safeParse(req.body)
-    if (!parseResult.success) {
-      return res.status(400).json({error: "Datos inválidos", details: parseResult.error.issues})
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: "Datos inválidos",
+        details: parsed.error.issues,
+      });
     }
 
-    const { username, password } = parseResult.data;
-
-    if (!username) return res.status(400).json({ error: "El nombre de usuario es obligatorio" });
-
-    let hashedPassword: string | undefined = undefined;
-    if (password) hashedPassword = await bcrypt.hash(password, 10);
-
-    const updatedUser = await UserModel.updateUser(userId, username, hashedPassword);
+    const updatedUser = await UserModel.updateUser(userId, parsed.data.username);
     if (!updatedUser) return res.status(404).json({ error: "Usuario no encontrado" });
 
     return res.json(updatedUser);
   } catch (err) {
-    console.error("Error al actualizar perfil:", err);
-    return res.status(500).json({ error: "Error al actualizar perfil" });
+    console.error(err);
+    return res.status(500).json({ error: "Error al actualizar usuario" });
+  }
+};
+
+export const updatePasswordController = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+
+    const parsed = updatePasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: "Datos inválidos",
+        details: parsed.error.issues,
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(parsed.data.password, 10);
+    const updatedUser = await UserModel.updateUser(userId, undefined, hashedPassword);
+
+    if (!updatedUser) return res.status(404).json({ error: "Usuario no encontrado" });
+
+    return res.json({ message: "Contraseña actualizada correctamente" });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Error al actualizar contraseña" });
   }
 };
 

@@ -1,6 +1,6 @@
 import type { Response } from "express";
-import type { AuthRequest } from "../middlewares/authMiddleware.js";
-import { CartModel } from "../models/cartModel.js";
+import type { AuthRequest } from "../middlewares/authMiddleware";
+import { CartModel } from "../models/cartModel";
 
 export const getCart = async (req: AuthRequest, res: Response) => {
   const userId = req.user?.id;
