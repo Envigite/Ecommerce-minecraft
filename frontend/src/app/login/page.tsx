@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/useUserStore";
+import { useCartStore } from "@/store/useCartStore";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -51,6 +52,24 @@ export default function LoginPage() {
         role: data.role,
       });
 
+      const localItems = useCartStore.getState().items;
+
+      const mergeRes = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/cart/merge`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items: localItems }),
+        }
+      );
+
+      const merged = await mergeRes.json();
+
+      useCartStore.getState().setItems(merged.items);
+
+      localStorage.removeItem("cart-store");
+
       router.push("/");
     } catch (err) {
       console.error(err);
@@ -69,6 +88,7 @@ export default function LoginPage() {
           <label className="block text-sm font-medium">
             Correo
             <input
+              name="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -102,6 +122,23 @@ export default function LoginPage() {
         >
           {loading ? "Ingresando..." : "Iniciar sesión"}
         </button>
+        <div className="flex justify-center gap-2">
+          <p>¿No tienes cuenta?</p>
+          <button
+            onClick={() => router.push("/register")}
+            className="text-blue-600 cursor-pointer hover:underline"
+          >
+            Regístrate
+          </button>
+        </div>
+        <div className="flex justify-center">
+          <button
+            onClick={() => router.push("/")}
+            className="cursor-pointer text-gray-500 hover:text-gray-600"
+          >
+            Volver a inicio
+          </button>
+        </div>
       </form>
     </section>
   );

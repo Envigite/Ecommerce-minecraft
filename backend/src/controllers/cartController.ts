@@ -43,3 +43,42 @@ export const removeCartItem = async (req: AuthRequest, res: Response) => {
   if (!ok) return res.status(404).json({ error: "Item no encontrado" });
   return res.status(204).send();
 };
+
+export const mergeCart = async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.id;
+  const { items: localItems } = req.body;
+
+  if (!localItems || !Array.isArray(localItems)) {
+    return res.status(400).json({ error: "Formato inválido" });
+  }
+  const dbItems = await CartModel.getUserCart(userId!);
+  const mergedMap = new Map<string, number>();
+  for (const item of dbItems) {
+    mergedMap.set(item.id, Number(item.quantity));
+  }
+  for (const item of localItems) {
+    const qty = mergedMap.get(item.id) ?? 0;
+    mergedMap.set(item.id, qty + Number(item.quantity));
+  }
+  await CartModel.clearUserCart(userId!);
+
+  for (const [product_id, quantity] of mergedMap.entries()) {
+    await CartModel.addOrUpdateItem(userId!, product_id, quantity);
+  }
+
+  const finalItems = await CartModel.getUserCart(userId!);
+
+  const total = finalItems.reduce((acc, i) => acc + Number(i.subtotal), 0);
+
+  return res.status(200).json({ items: finalItems, total });
+};
+
+export const clearCart = async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.id;
+
+  await CartModel.clearUserCart(userId!);
+
+  return res.status(204).send();
+};
+
+

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Header from "@/components/Header";
+import LayoutWrapper from "@/components/LayoutWrapper";
 
 export const metadata: Metadata = {
   title: "Fashion't Park",
@@ -15,8 +15,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="min-h-dvh bg-linear-to-r from-neutral-300 to-stone-400 text-slate-900 antialiased">
-        <Header />
-        <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
+        <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>
   );

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/useUserStore";
 
 export default function EditProfilePage() {
   const router = useRouter();
-  const { user, setUser } = useUserStore();
+  const { user, setUser, hasHydrated } = useUserStore();
 
   const [username, setUsername] = useState(user?.username ?? "");
   const [password, setPassword] = useState("");
@@ -19,9 +19,15 @@ export default function EditProfilePage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (hasHydrated && user) {
+      setUsername(user.username);
+    }
+  }, [user, hasHydrated]);
+
+  if (!hasHydrated) return <p>Cargando...</p>;
   if (!user) return <p>No estás autenticado</p>;
 
-  // bloquear espacios
   const blockSpaces = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === " ") e.preventDefault();
   };
@@ -31,7 +37,6 @@ export default function EditProfilePage() {
     setError(null);
     setSuccess(null);
 
-    // === Si no editas nada ===
     if (!editingUsername && !editingPassword) {
       setError("No hay cambios para guardar");
       return;
@@ -40,16 +45,7 @@ export default function EditProfilePage() {
     setLoading(true);
 
     try {
-      // ============================
-      //   1) UPDATE USERNAME
-      // ============================
       if (editingUsername) {
-        if (username.trim().length < 3) {
-          setError("El nombre de usuario debe tener al menos 3 caracteres");
-          setLoading(false);
-          return;
-        }
-
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/me/username`,
           {
@@ -73,7 +69,6 @@ export default function EditProfilePage() {
           return;
         }
 
-        // actualizar zustand
         setUser({
           id: user.id,
           username: data.username,
@@ -82,9 +77,6 @@ export default function EditProfilePage() {
         });
       }
 
-      // ============================
-      //   2) UPDATE PASSWORD
-      // ============================
       if (editingPassword) {
         if (password !== confirmPassword) {
           setError("Las contraseñas no coinciden");
@@ -134,7 +126,6 @@ export default function EditProfilePage() {
       <h1 className="text-2xl font-semibold mb-4">Editar Perfil</h1>
 
       <form className="space-y-6" onSubmit={handleSubmit}>
-        {/* ==== USERNAME ==== */}
         <div>
           <label className="block text-sm font-medium">
             {editingUsername ? "Nuevo nombre de usuario" : "Nombre de usuario"}
@@ -162,7 +153,6 @@ export default function EditProfilePage() {
           </div>
         </div>
 
-        {/* ==== PASSWORD ==== */}
         <div>
           <label className="block text-sm font-medium">
             {editingPassword ? "Nueva contraseña" : "Contraseña"}

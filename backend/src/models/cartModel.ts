@@ -2,17 +2,25 @@ import { pool } from "../config/db";
 
 export const CartModel = {
   getUserCart: async (userId: string) => {
-    const result = await pool.query(
-      `SELECT c.id, c.product_id, p.name, p.price, c.quantity, 
-              (p.price * c.quantity) AS subtotal
-       FROM cart_items c
-       JOIN products p ON c.product_id = p.id
-       WHERE c.user_id = $1
-       ORDER BY p.name ASC`,
-      [userId]
-    );
-    return result.rows;
-  },
+  const result = await pool.query(
+    `
+    SELECT 
+      p.id AS id,
+      p.name,
+      p.price,
+      p.image_url,
+      c.quantity,
+      (p.price * c.quantity) AS subtotal
+    FROM cart_items c
+    JOIN products p ON c.product_id = p.id
+    WHERE c.user_id = $1
+    ORDER BY p.name ASC
+    `,
+    [userId]
+  );
+
+  return result.rows;
+},
 
   addOrUpdateItem: async (userId: string, productId: string, quantity: number) => {
     const result = await pool.query(
@@ -45,4 +53,8 @@ export const CartModel = {
     );
     return (result.rowCount ?? 0) > 0;
   },
+
+  clearUserCart: async (userId: string) => {
+    await pool.query("DELETE FROM cart_items WHERE user_id = $1", [userId]);
+  }
 };

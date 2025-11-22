@@ -3,9 +3,32 @@
 import Image from "next/image";
 import { useCartStore } from "@/store/useCartStore";
 import { formatCurrency } from "@/utils/formatCurrency";
+import { useEffect } from "react";
+import { useUserStore } from "@/store/useUserStore";
 
 export default function CartPage() {
   const { items, removeItem, addItem, clearCart, total } = useCartStore();
+  const isAuth = useUserStore((s) => s.isAuthenticated);
+
+  useEffect(() => {
+    const syncCart = async () => {
+      if (!isAuth) return;
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/cart`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      useCartStore.getState().setItems(data.items);
+    };
+
+    syncCart();
+  }, [isAuth]);
 
   const handleIncrease = (id: string) => {
     const item = items.find((i) => i.id === id);

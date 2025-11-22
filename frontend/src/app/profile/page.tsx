@@ -6,13 +6,13 @@ import { useUserStore } from "@/store/useUserStore";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, isAuthenticated, logout } = useUserStore();
+  const { user, isAuthenticated, logout, hasHydrated } = useUserStore();
 
   const [loading, setLoading] = useState(true);
   const [serverError, setServerError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (hasHydrated && !isAuthenticated) {
       router.push("/login");
       return;
     }
@@ -48,10 +48,12 @@ export default function ProfilePage() {
     };
 
     fetchUser();
-  }, [isAuthenticated, router, logout]);
+  }, [isAuthenticated, router, logout, hasHydrated]);
 
+  if (!hasHydrated) return <p>Cargando...</p>;
   if (loading) return <p>Cargando perfil...</p>;
   if (serverError) return <p className="text-red-600">{serverError}</p>;
+  if (!isAuthenticated) return null;
 
   return (
     <section className="max-w-md mx-auto">
