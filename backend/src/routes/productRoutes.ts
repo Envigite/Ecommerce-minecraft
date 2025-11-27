@@ -7,8 +7,8 @@ const router = Router();
 
 router.get("/", listProducts);
 router.get("/:id", getProductById)
-router.post("/", authenticateJWT, authorizeRole(["admin"]), createProduct);
-router.put("/:id", authenticateJWT, authorizeRole(["admin"]), updateProduct);
+router.post("/", authenticateJWT, authorizeRole(["admin", "manager"]), createProduct);
+router.put("/:id", authenticateJWT, authorizeRole(["admin", "manager"]), updateProduct);
 router.delete("/:id", authenticateJWT, authorizeRole(["admin"]), deleteProduct);
 
 export default router;

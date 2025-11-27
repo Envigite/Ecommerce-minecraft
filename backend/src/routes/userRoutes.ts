@@ -1,10 +1,9 @@
 import { Router } from "express";
-import { promoteUser, demoteUser, deleteUser, listUsers  } from "../controllers/userController";
+import { changeUserRole, deleteUser, listUsers  } from "../controllers/userController";
 
 const router = Router();
 
-router.put("/promote/:id", promoteUser);
-router.put("/demote/:id", demoteUser);
+router.put("/role/:id", changeUserRole);
 router.delete("/:id", deleteUser);
 router.get("/", listUsers);
 

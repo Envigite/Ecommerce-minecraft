@@ -8,6 +8,7 @@ interface UserState {
   hasHydrated: boolean;
   setUser: (user: User) => void;
   logout: () => void;
+  setHasHydrated: (v: boolean) => void;
 }
 
 export const useUserStore = create<UserState>()(
@@ -18,13 +19,16 @@ export const useUserStore = create<UserState>()(
       hasHydrated: false,
 
       setUser: (user) => set({ user, isAuthenticated: true }),
+
       logout: () => set({ user: null, isAuthenticated: false }),
+
+      setHasHydrated: (v) => set({ hasHydrated: v }),
     }),
     {
       name: "user-storage",
       onRehydrateStorage: () => (state) => {
-        if (state) state.hasHydrated = true;
-      }
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

@@ -10,7 +10,7 @@ interface LayoutWrapperProps {
 export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   const pathname = usePathname();
 
-  const hideHeaderRoutes = ["/login", "/register"];
+  const hideHeaderRoutes = ["/login", "/register", "/admin"];
   const shouldHideHeader = hideHeaderRoutes.some((route) =>
     pathname.startsWith(route)
   );

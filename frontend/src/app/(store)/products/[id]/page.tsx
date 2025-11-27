@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useCartStore } from "@/store/useCartStore";
 import type { Product } from "@/types/product";
 import { formatCurrency } from "@/utils/formatCurrency";
+import { fetchProductById } from "@/lib/api/products";
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -17,13 +18,9 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-    const fetchProduct = async () => {
+    const load = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/products/${id}`
-        );
-        if (!res.ok) throw new Error("Error al obtener producto");
-        const data = await res.json();
+        const data = await fetchProductById(id);
         setProduct(data);
       } catch (err) {
         console.error(err);
@@ -32,7 +29,7 @@ export default function ProductDetailPage() {
         setLoading(false);
       }
     };
-    fetchProduct();
+    load();
   }, [id]);
 
   if (loading) return <p>Cargando producto...</p>;
@@ -52,7 +49,7 @@ export default function ProductDetailPage() {
   return (
     <section>
       <div className="flex flex-col md:flex-row gap-6">
-        {product.image_url && (
+        {product.image_url ? (
           <Image
             src={product.image_url}
             alt={product.name}
@@ -60,6 +57,10 @@ export default function ProductDetailPage() {
             height={300}
             className="rounded-md object-contain bg-white p-2"
           />
+        ) : (
+          <div className="w-full h-48 bg-slate-100 rounded flex items-center justify-center text-slate-400">
+            Sin imagen
+          </div>
         )}
 
         <div>

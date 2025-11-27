@@ -27,24 +27,13 @@ export const UserModel = {
   return result.rows[0] ?? null;
   },
 
-  promoteUserModel: async (id: string) => {
+  updateUserRoleModel: async (id: string, newRole: string) => {
     const result = await pool.query(
       `UPDATE users 
-       SET role = 'admin' 
+       SET role = $2 
        WHERE id = $1 
        RETURNING id, username, email, role, created_at`,
-      [id]
-    );
-    return result.rows[0] ?? null;
-  },
-
-  demoteUserModel: async (id: string) => {
-    const result = await pool.query(
-      `UPDATE users 
-      SET role = 'user' 
-      WHERE id = $1
-      RETURNING id, username, email, role, created_at`,
-      [id]
+      [id, newRole]
     );
     return result.rows[0] ?? null;
   },

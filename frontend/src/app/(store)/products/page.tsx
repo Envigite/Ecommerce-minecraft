@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types/product";
 import { formatCurrency } from "@/utils/formatCurrency";
+import { fetchProducts } from "@/lib/api/products";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -12,14 +13,9 @@ export default function ProductsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const load = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/products`,
-          { credentials: "include" }
-        );
-        if (!res.ok) throw new Error("Error al obtener productos");
-        const data = await res.json();
+        const data = await fetchProducts();
         setProducts(data);
       } catch (err) {
         console.error(err);
@@ -28,8 +24,7 @@ export default function ProductsPage() {
         setLoading(false);
       }
     };
-
-    fetchProducts();
+    load();
   }, []);
 
   if (loading) return <p>Cargando productos...</p>;
@@ -45,7 +40,7 @@ export default function ProductsPage() {
             key={p.id}
             className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition hover:scale-105"
           >
-            {p.image_url && (
+            {p.image_url ? (
               <Image
                 src={p.image_url}
                 alt={p.name}
@@ -53,6 +48,10 @@ export default function ProductsPage() {
                 height={200}
                 className="w-full h-48 object-contain rounded"
               />
+            ) : (
+              <div className="w-full h-48 bg-slate-100 rounded flex items-center justify-center text-slate-400">
+                Sin imagen
+              </div>
             )}
             <h2 className="mt-2 text-lg font-medium">{p.name}</h2>
             <p className="text-slate-600">{formatCurrency(Number(p.price))}</p>

@@ -14,7 +14,6 @@ export const listProducts = async (_req: Request, res: Response) => {
 
 export const createProduct = async (req: Request, res: Response) => {
   try {
-    //Zod
     const parseResult = productSchema.safeParse(req.body);
 
     if (!parseResult.success) {
@@ -64,7 +63,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     const parseResult = productSchema.partial().safeParse(req.body);
 
     if (!parseResult.success)
-      return res.status(400).json({ error: "Datos inválidos" });
+      return res.status(400).json({ error: "Datos inválidos", details: parseResult.error.issues });
 
     const updated = await ProductModel.updateProductModel(id, parseResult.data);
     if (!updated) return res.status(404).json({ error: "Producto no encontrado" });

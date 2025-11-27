@@ -1,35 +1,28 @@
 import type { Request, Response } from "express";
 import { UserModel } from "../models/userModel";
 
-export const promoteUser = async (req: Request, res: Response) => {
+const VALID_ROLES = ["admin", "manager", "user"];
+
+export const changeUserRole = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const { role } = req.body;
 
-    if (!id) return res.status(400).json({ error: "ID de usuario requerido" });
+    if (!id) return res.status(400).json({ error: "ID requerido" });
+    
+    if (!role || !VALID_ROLES.includes(role)) {
+      return res.status(400).json({ 
+        error: `Rol inválido. Roles permitidos: ${VALID_ROLES.join(", ")}` 
+      });
+    }
 
-    const user = await UserModel.promoteUserModel(id);
+    const user = await UserModel.updateUserRoleModel(id, role);
 
     if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
 
-    return res.status(200).json({ message: "Usuario promovido a admin", user });
+    return res.status(200).json({ message: `Rol actualizado a ${role}`, user });
   } catch (err) {
-    console.error("Error al promover usuario:", err);
-    res.status(500).json({ error: "Error interno del servidor" });
-  }
-};
-
-export const demoteUser = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-
-    if (!id) return res.status(400).json({ error: "ID de usuario requerido" });
-
-    const user = await UserModel.demoteUserModel(id);
-    if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
-
-    return res.status(200).json({ message: "Usuario degradado a user", user });
-  } catch (err) {
-    console.error("Error al degradar usuario:", err);
+    console.error("Error al cambiar rol:", err);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 };

@@ -8,14 +8,17 @@ import {
   clearCart
 } from "../controllers/cartController";
 import { authenticateJWT } from "../middlewares/authMiddleware";
+import { authorizeRole } from "../middlewares/roleMiddleware";
 
 const router = Router();
 
-router.get("/", authenticateJWT, getCart);
-router.post("/", authenticateJWT, addToCart);
-router.post("/merge", authenticateJWT, mergeCart);
-router.put("/", authenticateJWT, updateCartItem);
-router.delete("/:product_id", authenticateJWT, removeCartItem);
-router.delete("/", authenticateJWT, clearCart);
+router.use(authenticateJWT, authorizeRole(["user"]));
+
+router.get("/", getCart);
+router.post("/", addToCart);
+router.post("/merge", mergeCart);
+router.put("/", updateCartItem);
+router.delete("/:product_id", removeCartItem);
+router.delete("/", clearCart);
 
 export default router;
