@@ -6,7 +6,7 @@ const router = Router();
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.post("/logout", authenticateJWT, logoutUser);
+router.post("/logout", logoutUser);
 router.get("/me", authenticateJWT, getUserProfile);
 router.put("/me/username", authenticateJWT, updateUsernameController);
 router.put("/me/password", authenticateJWT, updatePasswordController);

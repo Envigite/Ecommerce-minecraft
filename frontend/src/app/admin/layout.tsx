@@ -2,9 +2,10 @@
 
 import { useUserStore } from "@/store/useUserStore";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AdminSidebar } from "./components/AdminSidebar";
 import { AdminTopbar } from "./components/AdminTopbar";
+import { logoutAPI } from "@/lib/api/auth";
 
 export default function AdminLayout({
   children,
@@ -12,9 +13,14 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { hasHydrated, user } = useUserStore();
+  const { hasHydrated, user, logout: logoutZustand } = useUserStore();
+  const [isMounted, setIsMounted] = useState(false);
 
   const isAdmin = user?.role === "admin" || user?.role === "manager";
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!hasHydrated) return;
@@ -23,23 +29,24 @@ export default function AdminLayout({
     }
   }, [hasHydrated, router, isAdmin]);
 
-  if (!hasHydrated) return null;
-  if (!isAdmin) return null;
+  if (!isMounted || !hasHydrated || !isAdmin) return null;
 
-  const logout = () => {
-    useUserStore.getState().logout();
-    setTimeout(() => router.push("/"), 1000);
+  const handleLogout = async () => {
+    await logoutAPI();
+    logoutZustand();
+    router.push("/login");
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex">
-      <AdminSidebar onLogout={logout} />
+    <div className="min-h-screen bg-slate-900 text-slate-100 relative">
+      <AdminSidebar onLogout={handleLogout} />
 
-      <div className="flex-1 ml-0 md:ml-48 lg:ml-64">
-        <div className="fixed top-0 left-0 md:left-48 lg:left-64 right-0 text-end z-30">
+      <div className="md:pl-48 lg:pl-64 flex flex-col min-h-screen transition-all duration-300 ease-in-out">
+        <header className="sticky top-0 z-30 bg-slate-900/90 backdrop-blur border-b border-slate-700 h-16 flex items-center">
           <AdminTopbar />
-        </div>
-        <main className="p-6 mt-8 bg-slate-900">{children}</main>
+        </header>
+
+        <main className="flex-1 p-6 overflow-x-hidden">{children}</main>
       </div>
     </div>
   );

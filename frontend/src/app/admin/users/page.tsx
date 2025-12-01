@@ -179,7 +179,7 @@ export default function AdminUsersPage() {
 
   return (
     <section className="pb-10 min-h-screen">
-      <div className="sticky top-14 z-20 bg-slate-900/95 backdrop-blur border-b border-slate-700 shadow-sm -mx-6 px-6 py-4 mb-6">
+      <div className="sticky z-20 bg-slate-900/95 backdrop-blur border-b border-slate-700 shadow-sm -mx-6 px-6 py-4 mb-6">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>

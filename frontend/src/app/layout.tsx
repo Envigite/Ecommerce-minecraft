@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
+const inter = Inter({ subsets: ["latin"] });
+
 export const metadata: Metadata = {
-  title: "Fashion't Park",
-  description: "E-commerce con Next.js + TypeScript",
+  title: {
+    template: "%s | Fashion't Park",
+    default: "Fashion't Park",
+  },
+  description: "La mejor tienda de cubos y moda.",
 };
 
 export default function RootLayout({
@@ -13,7 +19,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className="min-h-dvh bg-linear-to-r from-neutral-300 to-stone-400 text-slate-900 antialiased">
+      <body
+        className={`
+          ${inter.className} 
+          min-h-dvh 
+          bg-slate-50 
+          text-slate-900 
+          antialiased
+        `}
+      >
         {children}
       </body>
     </html>

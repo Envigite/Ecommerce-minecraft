@@ -87,3 +87,14 @@ export const register = async (payload: any) => {
 
   return data;
 };
+
+export const logoutAPI = async () => {
+  try {
+    await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/logout`, {
+      method: "POST",
+      credentials: "include",
+    });
+  } catch (error) {
+    console.error("Error al cerrar sesión en el servidor", error);
+  }
+};

@@ -2,7 +2,7 @@
 
 import { useUserStore } from "@/store/useUserStore";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import LayoutWrapper from "@/components/LayoutWrapper";
 
 export default function StoreLayout({
@@ -13,7 +13,13 @@ export default function StoreLayout({
   const router = useRouter();
   const { user, isAuthenticated, hasHydrated } = useUserStore();
 
+  const [isMounted, setIsMounted] = useState(false);
+
   const isAdmin = user?.role === "admin" || user?.role === "manager";
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!hasHydrated) return;
@@ -23,7 +29,7 @@ export default function StoreLayout({
     }
   }, [hasHydrated, isAuthenticated, isAdmin, router]);
 
-  if (!hasHydrated) return null;
+  if (!isMounted || !hasHydrated) return null;
   if (isAuthenticated && isAdmin) return null;
 
   return <LayoutWrapper>{children}</LayoutWrapper>;

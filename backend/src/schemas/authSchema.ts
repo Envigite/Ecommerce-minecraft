@@ -81,8 +81,8 @@ export const updatePasswordSchema = z.object({
     .min(6, { message: "La contraseña debe tener al menos 6 caracteres" })
     .max(50, { message: "La contraseña no puede superar los 50 caracteres" })
     .refine((val) => !/\s/.test(val), "La contraseñano puede contener espacios")
-    .refine((val) => /[A-Z]/.test(val), "La contraseña no debe incluir una mayúscula")
-    .refine((val) => /[a-z]/.test(val), "La contraseña no debe incluir una minúscula")
-    .refine((val) => /\d/.test(val), "La contraseña no debe incluir un número"),
+    .refine((val) => /[A-Z]/.test(val), "La contraseña debe incluir almenos una mayúscula")
+    .refine((val) => /[a-z]/.test(val), "La contraseña debe incluir almenos una minúscula")
+    .refine((val) => /\d/.test(val), "La contraseña debe incluir almenos un número"),
 });
 

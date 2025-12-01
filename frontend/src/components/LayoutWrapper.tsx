@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Header from "./Header";
+import Footer from "./Footer";
 
 interface LayoutWrapperProps {
   children: React.ReactNode;
@@ -10,15 +11,21 @@ interface LayoutWrapperProps {
 export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   const pathname = usePathname();
 
-  const hideHeaderRoutes = ["/login", "/register", "/admin"];
-  const shouldHideHeader = hideHeaderRoutes.some((route) =>
+  const hideNavigationRoutes = ["/login", "/register", "/admin"];
+
+  const shouldHideNav = hideNavigationRoutes.some((route) =>
     pathname.startsWith(route)
   );
 
   return (
-    <>
-      {!shouldHideHeader && <Header />}
-      <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
-    </>
+    <div className="flex flex-col min-h-screen">
+      {!shouldHideNav && <Header />}
+
+      <main className={`flex-1 ${!shouldHideNav ? "pt-4 pb-10" : ""}`}>
+        {children}
+      </main>
+
+      {!shouldHideNav && <Footer />}
+    </div>
   );
 }

@@ -56,7 +56,7 @@ export default function AdminActivityPage() {
 
   return (
     <section className="pb-10 min-h-screen">
-      <div className="sticky top-14 z-20 bg-slate-900/95 backdrop-blur border-b border-slate-700 shadow-sm -mx-6 px-6 py-4 mb-6">
+      <div className="sticky z-20 bg-slate-900/95 backdrop-blur border-b border-slate-700 shadow-sm -mx-6 px-6 py-4 mb-6">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-white">
