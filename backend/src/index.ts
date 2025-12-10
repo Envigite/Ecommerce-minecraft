@@ -19,7 +19,7 @@ const PORT = process.env.PORT ?? 3000;
 app.use(cors({
   origin: [
     "http://localhost:3000",
-    "https://a2cazkk4nt.us-east-2.awsapprunner.com",
+    "https://ecommerce-minecraft.onrender.com/",
     "https://www.fashiontpark.store",
     "https://fashiontpark.store"
   ],
