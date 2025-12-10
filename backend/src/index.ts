@@ -19,7 +19,7 @@ const PORT = process.env.PORT ?? 3000;
 app.use(cors({
   origin: [
     "http://localhost:3000",
-    "https://ecommerce-minecraft.onrender.com/",
+    "https://ecommerce-minecraft.vercel.app",
     "https://www.fashiontpark.store",
     "https://fashiontpark.store"
   ],
