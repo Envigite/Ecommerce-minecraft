@@ -232,12 +232,22 @@ export const checkUserProfile = async (req: Request, res: Response) => {
 
 export const googleCallback = (req: any, res: any) => {
   const user = req.user;
+  const isProduction = process.env.NODE_ENV === 'production';
 
   const token = jwt.sign(
     { id: user.id, role: user.role },
     process.env.JWT_SECRET || "secreto_super_seguro",
     { expiresIn: "7d" }
   );
+
+  res.cookie("token", token, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+      path: "/",
+  });
+
   const frontendUrl = process.env.CLIENT_URL || "http://localhost:3000";
 
   res.redirect(`${frontendUrl}/auth/google-success?token=${token}`);
