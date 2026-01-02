@@ -15,7 +15,7 @@ export default function MobileCategoryItem({
     <div className="border-b border-slate-100 last:border-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full justify-between items-center px-3 py-3 text-slate-700 font-medium hover:bg-slate-50 transition-colors"
+        className="flex w-full cursor-pointer justify-between items-center px-3 py-3 text-slate-700 font-medium hover:bg-slate-50 transition-colors"
       >
         {cat.name}
         <svg

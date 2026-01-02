@@ -1,4 +1,4 @@
-import type { Response, RequestHandler } from "express";
+import { RequestHandler } from "express";
 import { productSchema } from "../schemas/productSchema";
 import { ProductModel } from "../models/productModel";
 import { logAction } from "../utils/auditLogger";
@@ -54,7 +54,7 @@ export const getProductById: RequestHandler = async (req, res) => {
     return res.status(200).json(product);
   } catch (err) {
     console.error("Error al obtener producto:", err);
-    return res.status(500).json({ error: "Error interno del servidor" });;
+    return res.status(500).json({ error: "Error interno del servidor" });
   }
 };
 

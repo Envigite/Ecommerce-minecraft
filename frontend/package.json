@@ -10,11 +10,18 @@
     "deploy": "docker build -t mi-frontend-minecraft --build-arg NEXT_PUBLIC_BACKEND_URL=https://8qz2vwbdzm.us-east-2.awsapprunner.com . && docker tag mi-frontend-minecraft:latest 529088289796.dkr.ecr.us-east-2.amazonaws.com/fashiontpark-frontend:latest && docker push 529088289796.dkr.ecr.us-east-2.amazonaws.com/fashiontpark-frontend:latest"
   },
   "dependencies": {
+    "@types/uuid": "^10.0.0",
+    "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "framer-motion": "^12.23.26",
+    "lucide-react": "^0.561.0",
     "next": "^16.0.7",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
+    "react-markdown": "^10.1.0",
     "recharts": "^3.5.0",
+    "tailwind-merge": "^3.4.0",
+    "uuid": "^13.0.0",
     "zustand": "^5.0.8"
   },
   "devDependencies": {

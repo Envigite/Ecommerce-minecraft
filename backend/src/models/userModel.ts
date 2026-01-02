@@ -90,4 +90,60 @@ export const UserModel = {
     return result.rows[0] ?? null;
   },
 
+  findOrCreateByGoogle: async (googleId: string, email: string, displayName: string) => {
+    const client = await pool.connect();
+    
+    try {
+      const userCheck = await client.query(
+        "SELECT * FROM users WHERE google_id = $1",
+        [googleId]
+      );
+
+      if (userCheck.rows.length > 0) {
+        return userCheck.rows[0];
+      }
+
+      const emailCheck = await client.query(
+        "SELECT * FROM users WHERE email = $1",
+        [email]
+      );
+
+      if (emailCheck.rows.length > 0) {
+        const user = emailCheck.rows[0];
+        await client.query(
+          "UPDATE users SET google_id = $1 WHERE id = $2",
+          [googleId, user.id]
+        );
+        return { ...user, google_id: googleId };
+      }
+
+      let baseUsername = displayName.replace(/\s+/g, "");
+      let finalUsername = baseUsername;
+      let counter = 1;
+
+      while (true) {
+        const userCheckName = await client.query("SELECT id FROM users WHERE username = $1", [finalUsername]);
+        if (userCheckName.rowCount === 0) break;
+        finalUsername = `${baseUsername}${counter}`;
+        counter++;
+      }
+
+      const newUserQuery = `
+        INSERT INTO users (username, email, google_id, role, password_hash)
+        VALUES ($1, $2, $3, 'user', NULL)
+        RETURNING *
+      `;
+
+      const newUser = await client.query(newUserQuery, [
+        finalUsername,
+        email,
+        googleId,
+      ]);
+
+      return newUser.rows[0];
+
+    } finally {
+      client.release();
+    }
+  }
 };

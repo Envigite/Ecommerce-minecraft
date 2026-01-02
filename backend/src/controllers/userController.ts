@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+import { Request, Response } from "express";
 import { UserModel } from "../models/userModel";
 import { logAction } from "../utils/auditLogger";
 import type { AuthRequest } from "../middlewares/authMiddleware";

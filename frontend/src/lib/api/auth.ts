@@ -24,7 +24,7 @@ export const updateUsername = async (username: string) => {
   const data = await res.json();
 
   if (!res.ok) {
-    const msg = data?.details?.[0]?.message || data?.message || "Error al actualizar usuario";
+    const msg = data?.error || data?.details?.[0]?.message || data?.message || "Error al actualizar usuario";
     throw new Error(msg);
   }
 

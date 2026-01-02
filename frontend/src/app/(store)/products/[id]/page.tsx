@@ -16,12 +16,12 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const { isAuthenticated } = useUserStore();
 
+  const { addItem, items: cartItems } = useCartStore();
+
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
-
-  const addItem = useCartStore((s) => s.addItem);
 
   useEffect(() => {
     if (!id) return;
@@ -62,82 +62,86 @@ export default function ProductDetailPage() {
 
   if (loading)
     return (
-      <div className="min-h-[50vh] flex items-center justify-center text-slate-400 animate-pulse">
-        Cargando detalle del producto...
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
+        <div className="w-16 h-16 border-4 border-slate-200 border-t-sky-600 rounded-full animate-spin"></div>
+        <p className="text-slate-400 animate-pulse font-medium">
+          Cargando detalles...
+        </p>
       </div>
     );
 
   if (!product)
     return (
-      <div className="min-h-[50vh] flex flex-col items-center justify-center gap-6">
-        <div className="text-6xl">📦</div>
-        <h2 className="text-2xl font-bold text-slate-700">
-          Producto no encontrado
-        </h2>
-        <p className="text-slate-500">Parece que este bloque ya fue minado.</p>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-6 bg-slate-50 rounded-3xl m-4">
+        <div className="text-7xl">📦</div>
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">
+            Producto no encontrado
+          </h2>
+          <p className="text-slate-500">
+            Es posible que este producto ya no esté disponible.
+          </p>
+        </div>
         <button
           onClick={() => router.push("/products")}
-          className="text-sky-600 hover:text-sky-700 font-medium hover:underline flex items-center gap-2 cursor-pointer"
+          className="bg-slate-900 text-white px-6 py-3 rounded-xl hover:bg-slate-800 transition font-medium flex items-center gap-2"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-4 h-4"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-            />
-          </svg>
-          Volver a la tienda
+          Explorar catálogo
         </button>
       </div>
     );
 
-  const handleAddToCart = () => {
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image_url: product.image_url,
-      quantity: quantity,
-    });
-  };
-
-  const handleBuyNow = () => {
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image_url: product.image_url,
-      quantity: quantity,
-    });
-
-    if (isAuthenticated) {
-      router.push("/cart");
-    } else {
-      router.push("/login?redirect=/cart");
-    }
-  };
-
   const maxStock = product.stock ?? 0;
   const isOutOfStock = maxStock <= 0;
 
+  const validateAndAdd = (redirect: boolean) => {
+    if (isOutOfStock) return;
+
+    const itemInCart = cartItems.find((i) => i.id === product.id);
+    const currentQtyInCart = itemInCart ? itemInCart.quantity : 0;
+
+    if (currentQtyInCart + quantity > maxStock) {
+      alert(
+        `⚠️ No puedes agregar más. Ya tienes ${currentQtyInCart} en el carrito y solo quedan ${maxStock} disponibles.`
+      );
+      return;
+    }
+
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image_url: product.image_url,
+      quantity: quantity,
+    });
+
+    if (redirect) {
+      if (isAuthenticated) {
+        router.push("/cart");
+      } else {
+        router.push("/login?redirect=/cart");
+      }
+    } else {
+    }
+  };
+
   return (
-    <section className="mx-auto max-w-7xl px-4">
-      <nav className="flex text-sm text-slate-500 mb-8 overflow-hidden whitespace-nowrap text-ellipsis">
-        <Link href="/" className="hover:text-sky-600 transition">
+    <section className="mx-auto max-w-7xl px-4 py-8">
+      <nav className="flex text-sm text-slate-500 mb-8 overflow-hidden whitespace-nowrap text-ellipsis items-center">
+        <Link
+          href="/"
+          className="hover:text-sky-600 transition hover:underline"
+        >
           Inicio
         </Link>
-        <span className="mx-2">/</span>
-        <Link href="/products" className="hover:text-sky-600 transition">
+        <span className="mx-2 text-slate-300">/</span>
+        <Link
+          href="/products"
+          className="hover:text-sky-600 transition hover:underline"
+        >
           Productos
         </Link>
-        <span className="mx-2">/</span>
+        <span className="mx-2 text-slate-300">/</span>
         <span className="text-slate-900 font-medium truncate">
           {product.name}
         </span>
@@ -152,7 +156,9 @@ export default function ProductDetailPage() {
                   src={product.image_url}
                   alt={product.name}
                   fill
-                  className="object-contain transition-transform p-8 duration-500 group-hover:scale-105"
+                  className={`object-contain transition-transform p-8 duration-500 group-hover:scale-105 ${
+                    isOutOfStock ? "grayscale opacity-70" : ""
+                  }`}
                   sizes="(max-width: 768px) 100vw, 50vw"
                   priority
                 />
@@ -165,8 +171,10 @@ export default function ProductDetailPage() {
             </div>
 
             {isOutOfStock && (
-              <div className="absolute top-4 right-4 bg-red-100 text-red-700 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide border border-red-200">
-                Agotado
+              <div className="absolute inset-0 bg-white/30 backdrop-blur-[1px] flex items-center justify-center z-10">
+                <div className="bg-slate-900 text-white px-6 py-2 rounded-full font-bold uppercase tracking-wider shadow-xl transform rotate-[-5deg]">
+                  Agotado
+                </div>
               </div>
             )}
           </div>
@@ -174,82 +182,107 @@ export default function ProductDetailPage() {
 
         <div className="flex flex-col h-full">
           <div className="lg:sticky lg:top-24">
-            <p className="text-sky-600 font-medium text-sm mb-2 uppercase tracking-wider">
+            <p className="text-sky-600 font-bold text-xs mb-3 uppercase tracking-widest bg-sky-50 w-fit px-2 py-1 rounded">
               {product.category ? product.category.split(",")[0] : "General"}
             </p>
-            <h1 className="text-3xl lg:text-5xl font-bold text-slate-900 mb-4 leading-tight">
+
+            <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4 leading-tight">
               {product.name}
             </h1>
 
-            <div className="flex items-end gap-4 mb-6 border-b border-slate-100 pb-6">
-              <span className="text-4xl font-bold text-slate-900 tracking-tight">
-                {formatCurrency(Number(product.price))}
-              </span>
+            <div className="flex flex-col gap-1 mb-6 border-b border-slate-100 pb-6">
+              <div className="flex items-center gap-4">
+                <span className="text-4xl font-bold text-slate-900 tracking-tight">
+                  {formatCurrency(Number(product.price))}
+                </span>
 
-              {!isOutOfStock ? (
-                <div className="flex flex-col mb-1">
-                  <span className="text-green-600 text-sm font-bold flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-green-500"></span>{" "}
+                {!isOutOfStock ? (
+                  <span className="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full border border-green-200">
                     En Stock
                   </span>
-                  {maxStock < 10 && (
-                    <span className="text-xs text-orange-500 font-medium">
-                      ¡Solo quedan {maxStock} unidades!
-                    </span>
-                  )}
-                </div>
-              ) : (
-                <span className="text-red-500 text-sm font-bold flex items-center gap-1 mb-1">
-                  <span className="w-2 h-2 rounded-full bg-red-500"></span> Sin
-                  Stock
-                </span>
+                ) : (
+                  <span className="bg-slate-100 text-slate-500 text-xs font-bold px-2.5 py-1 rounded-full border border-slate-200">
+                    No disponible
+                  </span>
+                )}
+              </div>
+
+              {!isOutOfStock && maxStock < 5 && (
+                <p className="text-sm text-orange-600 font-medium animate-pulse mt-1">
+                  🔥 ¡Date prisa! Solo quedan {maxStock} unidades.
+                </p>
               )}
             </div>
 
-            <div className="prose prose-slate text-slate-600 mb-8">
-              <p className="leading-relaxed">
+            <div className="prose prose-slate text-slate-600 mb-8 leading-relaxed">
+              <p>
                 {product.description ||
-                  "Este producto no tiene descripción detallada, pero seguro es genial para tu inventario."}
+                  "Este producto es una excelente adición a tu colección. Fabricado con materiales de alta calidad y diseñado para durar."}
               </p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               {!isOutOfStock ? (
                 <>
-                  <div className="flex items-center gap-4 mb-4">
-                    <span className="text-sm font-medium text-slate-700">
-                      Cantidad:
-                    </span>
-                    <div className="flex items-center border border-slate-300 rounded-xl bg-white shadow-sm w-max">
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 mb-2 block">
+                      Cantidad
+                    </label>
+                    <div className="flex items-center border border-slate-300 rounded-xl bg-white w-max shadow-sm hover:border-slate-400 transition">
                       <button
                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="px-4 py-2 cursor-pointer text-slate-500 hover:text-sky-600 hover:bg-slate-50 transition border-r border-slate-100 rounded-l-xl disabled:opacity-50"
+                        className="w-12 h-12 flex items-center justify-center text-slate-500 hover:text-sky-600 hover:bg-slate-50 rounded-l-xl transition disabled:opacity-30"
                         disabled={quantity <= 1}
                       >
-                        -
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={2}
+                          stroke="currentColor"
+                          className="w-4 h-4"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M19.5 12h-15"
+                          />
+                        </svg>
                       </button>
-                      <span className="px-4 py-2 font-semibold text-slate-900 w-12 text-center select-none">
+
+                      <span className="w-12 text-center font-bold text-slate-900 select-none text-lg">
                         {quantity}
                       </span>
+
                       <button
                         onClick={() =>
                           setQuantity(Math.min(maxStock, quantity + 1))
                         }
-                        className="px-4 py-2 cursor-pointer text-slate-500 hover:text-sky-600 hover:bg-slate-50 transition border-l border-slate-100 rounded-r-xl disabled:opacity-50"
+                        className="w-12 h-12 flex items-center justify-center text-slate-500 hover:text-sky-600 hover:bg-slate-50 rounded-r-xl transition disabled:opacity-30"
                         disabled={quantity >= maxStock}
                       >
-                        +
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={2}
+                          stroke="currentColor"
+                          className="w-4 h-4"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 4.5v15m7.5-7.5h-15"
+                          />
+                        </svg>
                       </button>
                     </div>
-                    <span className="text-xs text-slate-400">
-                      {maxStock} disponibles
-                    </span>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3 pt-2">
                     <button
-                      onClick={handleAddToCart}
-                      className="flex-1 cursor-pointer bg-white border-2 border-slate-200 hover:text-gray-700 hover:bg-green-400 hover:border-green-600 text-slate-900 font-bold py-3.5 px-6 rounded-xl transition-all duration-200 transform active:scale-95 flex items-center justify-center gap-2"
+                      onClick={() => validateAndAdd(false)}
+                      className="flex-1 cursor-pointer bg-white border-2 border-slate-200 hover:border-slate-900 text-slate-900 font-bold py-4 px-6 rounded-xl transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -269,69 +302,110 @@ export default function ProductDetailPage() {
                     </button>
 
                     <button
-                      onClick={handleBuyNow}
-                      className="flex-1 bg-sky-600 cursor-pointer hover:bg-sky-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-sky-200 hover:shadow-sky-300 transition-all duration-200 transform active:scale-95 flex items-center justify-center gap-2"
+                      onClick={() => validateAndAdd(true)}
+                      className="flex-1 bg-slate-900 cursor-pointer hover:bg-slate-800 text-white font-bold py-4 px-6 rounded-xl shadow-xl shadow-slate-200 hover:shadow-slate-300 transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                       Comprar Ahora
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                        className="w-5 h-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                        />
+                      </svg>
                     </button>
                   </div>
                 </>
               ) : (
-                <div className="bg-slate-100 border border-slate-200 rounded-xl p-4 text-center">
-                  <p className="text-slate-500 font-medium">
-                    Este producto no está disponible por el momento.
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
+                  <p className="text-slate-900 font-bold mb-1">
+                    Este producto está agotado temporalmente.
                   </p>
-                  <button className="mt-2 cursor-pointer text-sky-600 text-sm hover:underline font-semibold">
-                    Avísame cuando haya stock
+                  <p className="text-slate-500 text-sm mb-4">
+                    Estamos trabajando para reponerlo lo antes posible.
+                  </p>
+                  <button className="cursor-pointer text-sky-600 text-sm hover:underline font-bold bg-white border border-slate-200 px-4 py-2 rounded-lg hover:bg-slate-50 transition">
+                    🔔 Avísame cuando haya stock
                   </button>
                 </div>
               )}
             </div>
 
-            <div className="mt-8 grid grid-cols-2 gap-4 text-sm text-slate-500">
-              <div className="flex items-center gap-2">
-                <svg
-                  className="w-5 h-5 text-green-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span>Entrega inmediata</span>
+            <div className="mt-10 grid grid-cols-2 gap-4 pt-8 border-t border-slate-100">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-green-50 text-green-600 rounded-lg">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-bold text-slate-900 text-sm">
+                    Envío Rápido
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    Despacho en 24h hábiles
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <svg
-                  className="w-5 h-5 text-green-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                  />
-                </svg>
-                <span>Pago seguro</span>
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-bold text-slate-900 text-sm">
+                    Pago Seguro
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    Transacción encriptada
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {relatedProducts.length > 4 && (
-        <div className="mt-10 border-t border-slate-100 pt-10">
-          <div className="mx-auto max-w-7xl px-4 mb-6">
+      {relatedProducts.length > 0 && (
+        <div className="mt-20 border-t border-slate-100 pt-16">
+          <div className="mx-auto max-w-7xl mb-8 flex items-center justify-between">
             <h2 className="text-2xl font-bold text-slate-900">
               También te podría interesar
             </h2>
+            <Link
+              href="/products"
+              className="text-sm font-bold text-sky-600 hover:underline"
+            >
+              Ver todo
+            </Link>
           </div>
           <InfiniteCarousel products={relatedProducts} />
         </div>

@@ -2,18 +2,26 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCartStore } from "@/store/useCartStore";
 import { useUserStore } from "@/store/useUserStore";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { fetchCart } from "@/lib/api/cart";
 
+const SHIPPING_COST_VALUE = 3990;
+
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart } = useCartStore();
   const isAuth = useUserStore((s) => s.isAuthenticated);
+  const router = useRouter();
 
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const [deliveryType, setDeliveryType] = useState<"shipping" | "pickup">(
+    "shipping"
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -39,7 +47,8 @@ export default function CartPage() {
     (acc, item) => acc + item.price * item.quantity,
     0
   );
-  const shippingCost = 0;
+
+  const shippingCost = deliveryType === "pickup" ? 0 : SHIPPING_COST_VALUE;
   const total = subtotal + shippingCost;
 
   const handleIncrease = (id: string) => {
@@ -55,6 +64,14 @@ export default function CartPage() {
       removeItem(id);
     } else {
       updateQuantity(id, item.quantity - 1);
+    }
+  };
+
+  const handleBuyNow = () => {
+    if (isAuth) {
+      router.push("/checkout");
+    } else {
+      router.push("/login?redirect=/cart");
     }
   };
 
@@ -123,7 +140,6 @@ export default function CartPage() {
                   index !== items.length - 1 ? "border-b border-slate-100" : ""
                 }`}
               >
-                {/* Imagen */}
                 <div className="relative w-full sm:w-28 h-28 bg-slate-50 rounded-xl border border-slate-100 shrink-0 flex items-center justify-center">
                   {item.image_url ? (
                     <Image
@@ -216,26 +232,72 @@ export default function CartPage() {
                 <span>Subtotal</span>
                 <span>{formatCurrency(subtotal)}</span>
               </div>
-              <div className="flex justify-between text-slate-600">
-                <span>Envío</span>
-                {shippingCost === 0 ? (
-                  <span className="text-green-600 font-medium">Gratis</span>
-                ) : (
-                  <span>{formatCurrency(shippingCost)}</span>
-                )}
+
+              <div className="pt-2">
+                <p className="text-xs text-slate-500 font-bold uppercase mb-2">
+                  Estimación de entrega
+                </p>
+                <div className="flex flex-col gap-2">
+                  <label
+                    className={`flex justify-between items-center p-2 rounded-lg border cursor-pointer text-sm ${
+                      deliveryType === "shipping"
+                        ? "bg-sky-50 border-sky-200"
+                        : "border-slate-100 hover:bg-slate-50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="cartDelivery"
+                        checked={deliveryType === "shipping"}
+                        onChange={() => setDeliveryType("shipping")}
+                        className="text-sky-600"
+                      />
+                      <span>Despacho a Domicilio</span>
+                    </div>
+                    <span className="font-bold">
+                      {formatCurrency(SHIPPING_COST_VALUE)}
+                    </span>
+                  </label>
+
+                  <label
+                    className={`flex justify-between items-center p-2 rounded-lg border cursor-pointer text-sm ${
+                      deliveryType === "pickup"
+                        ? "bg-sky-50 border-sky-200"
+                        : "border-slate-100 hover:bg-slate-50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="cartDelivery"
+                        checked={deliveryType === "pickup"}
+                        onChange={() => setDeliveryType("pickup")}
+                        className="text-sky-600"
+                      />
+                      <span>Retiro en Tienda</span>
+                    </div>
+                    <span className="font-bold text-green-600">Gratis</span>
+                  </label>
+                </div>
               </div>
 
               <div className="border-t border-slate-100 my-4"></div>
 
               <div className="flex justify-between items-center">
-                <span className="text-lg font-bold text-slate-900">Total</span>
+                <span className="text-lg font-bold text-slate-900">
+                  Total Estimado
+                </span>
                 <span className="text-2xl font-bold text-slate-900">
                   {formatCurrency(total)}
                 </span>
               </div>
             </div>
 
-            <button className="w-full cursor-pointer bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition shadow-lg transform active:scale-95 mb-4">
+            <button
+              onClick={handleBuyNow}
+              className="w-full cursor-pointer bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition shadow-lg transform active:scale-95 mb-4"
+            >
               Continuar al Pago
             </button>
 
@@ -251,7 +313,6 @@ export default function CartPage() {
                     className="h-3 object-contain"
                   />
                 </div>
-
                 <div className="h-8 w-12 bg-slate-100 border border-slate-200 rounded flex items-center justify-center">
                   <img
                     src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg"
@@ -259,7 +320,6 @@ export default function CartPage() {
                     className="h-4 object-contain"
                   />
                 </div>
-
                 <div className="h-8 w-12 bg-slate-100 border border-slate-200 rounded flex items-center justify-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

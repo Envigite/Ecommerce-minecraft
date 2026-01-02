@@ -1,9 +1,13 @@
 export function formatCurrency(
-  value: number,
+  value: number | string | undefined | null,
   locale: string = "es-CL",
   currency: string = "CLP"
 ): string {
-  return value.toLocaleString(locale, {
+  const numberValue = Number(value);
+  if (isNaN(numberValue)) {
+    return "$0";
+  }
+  return numberValue.toLocaleString(locale, {
     style: "currency",
     currency,
     minimumFractionDigits: 0,

@@ -3,7 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function ShopSearchBar() {
+interface ShopSearchBarProps {
+  onSearch?: () => void;
+}
+
+export default function ShopSearchBar({ onSearch }: ShopSearchBarProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
 
@@ -11,6 +15,10 @@ export default function ShopSearchBar() {
     e.preventDefault();
     if (!query.trim()) return;
     router.push(`/products?search=${encodeURIComponent(query)}`);
+
+    if (onSearch) {
+      onSearch();
+    }
   };
 
   return (
@@ -25,7 +33,7 @@ export default function ShopSearchBar() {
         />
         <button
           type="submit"
-          className="absolute right-1.5 top-1.5 p-1.5 bg-sky-600 text-white rounded-full hover:bg-sky-700 transition"
+          className="absolute cursor-pointer right-1.5 top-1.5 p-1.5 bg-sky-600 text-white rounded-full hover:bg-sky-700 transition"
           aria-label="Buscar"
         >
           <svg

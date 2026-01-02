@@ -32,8 +32,7 @@ export default function AdminLayout({
   if (!isMounted || !hasHydrated || !isAdmin) return null;
 
   const handleLogout = async () => {
-    await logoutAPI();
-    logoutZustand();
+    await logoutZustand();
     router.push("/login");
   };
 
