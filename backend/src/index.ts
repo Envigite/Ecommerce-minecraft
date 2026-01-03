@@ -26,6 +26,8 @@ import "./config/passport";
 const app = express();
 const PORT = process.env.PORT ?? 3001;
 
+app.set("trust proxy", 1);
+
 // Ver peticiones en consola
 app.use(morgan("dev"));
 
@@ -63,6 +65,14 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 app.disable("x-powered-by");
+
+// Evitar cache
+app.use((req, res, next) => {
+  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.header("Pragma", "no-cache");
+  res.header("Expires", "0");
+  next();
+});
 
 // Seguridad extra
 app.use(
