@@ -130,16 +130,21 @@ export const loginUser = async (
 
 // ---------------- LOGOUT ----------------
 export const logoutUser = (req: Request, res: Response) => {
-  res.clearCookie("token", {
+  const isProduction = process.env.NODE_ENV === "production";
+
+  const cookieOptions: any = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production", 
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     path: "/",
-  });
+    domain: isProduction ? ".fashiontpark.store" : undefined, 
+  };
+
+  res.clearCookie("token", cookieOptions);
 
   res.cookie("token", "", {
-     expires: new Date(0), 
-     path: "/"
+    ...cookieOptions,
+    expires: new Date(0),
   });
 
   return res.status(200).json({ message: "Sesión cerrada" });
