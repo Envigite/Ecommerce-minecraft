@@ -59,6 +59,7 @@ export const registerUser = async (
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? "none" : "lax",
+      domain: isProduction ? ".fashiontpark.store" : undefined,
       maxAge: 1000 * 60 * 60 * 24 * 30, //30 días
       path: "/",
     });
@@ -110,6 +111,7 @@ export const loginUser = async (
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? "none" : "lax",
+      domain: isProduction ? ".fashiontpark.store" : undefined,
       maxAge: 1000 * 60 * 60 * 24 * 30, //30 días
       path: "/",
     });
@@ -244,6 +246,7 @@ export const googleCallback = (req: any, res: any) => {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? "none" : "lax",
+      domain: isProduction ? ".fashiontpark.store" : undefined,
       maxAge: 1000 * 60 * 60 * 24 * 7,
       path: "/",
   });

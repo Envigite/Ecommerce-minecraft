@@ -105,23 +105,12 @@ export const OrderModel = {
         VALUES ($1, $2, $3, $4)
       `;
 
-      const updateStockQuery = `
-        UPDATE products 
-        SET stock = stock - $1 
-        WHERE id = $2
-      `;
-
       for (const item of data.items) {
         await client.query(itemQuery, [
           orderId, 
           item.product_id, 
           Number(item.quantity), 
           Number(item.price)
-        ]);
-        
-        await client.query(updateStockQuery, [
-            Number(item.quantity), 
-            item.product_id
         ]);
       }
 

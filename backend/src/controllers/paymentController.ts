@@ -3,6 +3,7 @@ import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import { OrderModel } from '../models/orderModel';
 import { AddressModel } from '../models/addressModel';
 import { ICreateOrder } from '../types/models';
+import { ProductModel } from '../models/productModel';
 
 const SHIPPING_COST = 3990;
 
@@ -130,14 +131,34 @@ export const receiveWebhook = async (req: Request, res: Response) => {
     try {
       if (topic === 'payment' || topic === 'payment.created') {
         if (!paymentId) return res.sendStatus(200);
+
         const payment = new Payment(client);
         const paymentData = await payment.get({ id: paymentId });
+        
         const status = paymentData.status;
         const orderId = paymentData.external_reference;
+
         if (status === 'approved' && orderId) {
-          await OrderModel.updateStatus(orderId, 'paid', paymentId);
+            const order = await OrderModel.findByIdAdmin(orderId);
+
+            if (order && order.status !== 'paid') {
+                console.log(`💰 Pago aprobado para orden ${orderId}. Descontando stock...`);
+                
+                await OrderModel.updateStatus(orderId, 'paid', paymentId);
+
+                if (order.items && Array.isArray(order.items)) {
+                    for (const item of order.items) {
+                        if (item.product_id && item.quantity) {
+                            await ProductModel.decreaseStock(item.product_id, Number(item.quantity));
+                        }
+                    }
+                }
+            }
         }
       }
       res.sendStatus(200);
-    } catch (error) { res.sendStatus(500); }
+    } catch (error) { 
+        console.error("Webhook Error:", error);
+        res.sendStatus(500); 
+    }
 };
