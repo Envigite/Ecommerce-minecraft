@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+import type { Request, Response, CookieOptions } from "express";
 import { registerSchema, loginSchema, updateUsernameSchema, updatePasswordSchema } from "../schemas/authSchema";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -9,8 +9,16 @@ import type { LoginBody, RegisterBody } from "../types/auth";
 
 const JWT_SECRET: string = process.env.JWT_SECRET!;
 const JWT_EXPIRES_IN: string = process.env.JWT_EXPIRES_IN || "30d";
+
 const isProduction = process.env.NODE_ENV === 'production';
 
+const AUTH_COOKIE_OPTIONS: CookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+  path: "/",
+  domain: isProduction ? ".fashiontpark.store" : undefined, 
+};
 
 // ---------------- REGISTER ----------------
 export const registerUser = async (
@@ -18,7 +26,6 @@ export const registerUser = async (
   res: Response
 ) => {
   try {
-
     const parsed = registerSchema.safeParse(req.body);
 
     if (!parsed.success) {
@@ -56,12 +63,8 @@ export const registerUser = async (
     );
 
     res.cookie("token", token, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
-      domain: isProduction ? ".fashiontpark.store" : undefined,
-      maxAge: 1000 * 60 * 60 * 24 * 30, //30 días
-      path: "/",
+      ...AUTH_COOKIE_OPTIONS,
+      maxAge: 1000 * 60 * 60 * 24 * 30, // 30 días
     });
 
     return res.status(201).json({
@@ -82,7 +85,6 @@ export const loginUser = async (
   req: Request<{}, {}, LoginBody>, 
   res: Response) => {
   try {
-
     const parsed = loginSchema.safeParse(req.body);
 
     if (!parsed.success) {
@@ -108,12 +110,8 @@ export const loginUser = async (
     );
 
     res.cookie("token", token, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
-      domain: isProduction ? ".fashiontpark.store" : undefined,
-      maxAge: 1000 * 60 * 60 * 24 * 30, //30 días
-      path: "/",
+      ...AUTH_COOKIE_OPTIONS,
+      maxAge: 1000 * 60 * 60 * 24 * 30, // 30 días
     });
 
     return res.status(200).json({
@@ -130,20 +128,10 @@ export const loginUser = async (
 
 // ---------------- LOGOUT ----------------
 export const logoutUser = (req: Request, res: Response) => {
-  const isProduction = process.env.NODE_ENV === "production";
-
-  const cookieOptions: any = {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
-    path: "/",
-    domain: isProduction ? ".fashiontpark.store" : undefined, 
-  };
-
-  res.clearCookie("token", cookieOptions);
+  res.clearCookie("token", AUTH_COOKIE_OPTIONS);
 
   res.cookie("token", "", {
-    ...cookieOptions,
+    ...AUTH_COOKIE_OPTIONS,
     expires: new Date(0),
   });
 
@@ -239,25 +227,19 @@ export const checkUserProfile = async (req: Request, res: Response) => {
 
 export const googleCallback = (req: any, res: any) => {
   const user = req.user;
-  const isProduction = process.env.NODE_ENV === 'production';
 
   const token = jwt.sign(
     { id: user.id, role: user.role },
-    process.env.JWT_SECRET || "secreto_super_seguro",
+    JWT_SECRET,
     { expiresIn: "7d" }
   );
 
   res.cookie("token", token, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
-      domain: isProduction ? ".fashiontpark.store" : undefined,
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-      path: "/",
+      ...AUTH_COOKIE_OPTIONS,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 días
   });
 
   const frontendUrl = process.env.CLIENT_URL || "http://localhost:3000";
 
   res.redirect(`${frontendUrl}/auth/google-success?token=${token}`);
 };
-
