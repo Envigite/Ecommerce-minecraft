@@ -35,6 +35,13 @@ export function AdminSidebar({ onLogout }: { onLogout: () => void }) {
       >
         Ventas
       </a>
+      <a
+        href="/admin/messages"
+        onClick={close}
+        className="block hover:underline p-2 rounded hover:bg-slate-800 transition-colors"
+      >
+        Mensajes
+      </a>
 
       {user?.role === "admin" && (
         <>

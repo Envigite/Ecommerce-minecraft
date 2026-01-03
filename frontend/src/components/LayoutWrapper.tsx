@@ -13,8 +13,12 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   const pathname = usePathname();
 
   const hideNavigationRoutes = ["/login", "/register", "/admin"];
+  const fullWidthRoutes = ["/contact", "/checkout"];
 
   const shouldHideNav = hideNavigationRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
+  const isFullWidth = fullWidthRoutes.some((route) =>
     pathname.startsWith(route)
   );
 
@@ -23,7 +27,11 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
       {!shouldHideNav && <Header />}
       {/* {!shouldHideNav && <ChatWidget />} */}
 
-      <main className={`flex-1 ${!shouldHideNav ? "pt-4 pb-10" : ""}`}>
+      <main
+        className={`flex-1 ${
+          !shouldHideNav && !isFullWidth ? "pt-4 pb-10" : ""
+        }`}
+      >
         {children}
       </main>
 

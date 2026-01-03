@@ -19,6 +19,7 @@ import chatRoutes from "./routes/chatRoutes";
 import addressRoutes from "./routes/addressRoutes";
 import cardRoutes from "./routes/cardRoutes";
 import orderRoutes from "./routes/orderRoutes";
+import contactRoutes from "./routes/contactRoutes";
 import passport from "passport";
 import "./config/passport";
 
@@ -85,6 +86,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/users", authenticateJWT, authorizeRole(["admin"]), userRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/audit", authenticateJWT, authorizeRole(["admin"]), auditRoutes);
+app.use("/api/contact", contactRoutes);
 
 // Rutas FastAPI
 app.use("/api/chat", chatRoutes);
