@@ -66,7 +66,7 @@ export default function AdminDashboardPage() {
   );
 
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "all">(
-    "30d"
+    "all"
   );
 
   const TABS = [
