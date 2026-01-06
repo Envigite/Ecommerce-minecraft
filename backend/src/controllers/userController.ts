@@ -1,11 +1,10 @@
 import { Request, Response } from "express";
 import { UserModel } from "../models/userModel";
 import { logAction } from "../utils/auditLogger";
-import type { AuthRequest } from "../middlewares/authMiddleware";
 
 const VALID_ROLES = ["admin", "manager", "user"];
 
-export const changeUserRole = async (req: AuthRequest, res: Response) => {
+export const changeUserRole = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { role } = req.body;
@@ -30,7 +29,7 @@ export const changeUserRole = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const deleteUser = async (req: AuthRequest, res: Response) => {
+export const deleteUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     if (!id) return res.status(400).json({ error: "ID de usuario requerido" });

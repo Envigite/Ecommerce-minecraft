@@ -1,8 +1,7 @@
-import type { Response } from "express";
-import type { AuthRequest } from "../middlewares/authMiddleware";
+import type { Request, Response } from "express";
 import { CartModel } from "../models/cartModel";
 
-export const getCart = async (req: AuthRequest, res: Response) => {
+export const getCart = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     const items = await CartModel.getUserCart(userId!);
@@ -15,7 +14,7 @@ export const getCart = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const addToCart = async (req: AuthRequest, res: Response) => {
+export const addToCart = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     const { product_id, quantity } = req.body;
@@ -31,7 +30,7 @@ export const addToCart = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const updateCartItem = async (req: AuthRequest, res: Response) => {
+export const updateCartItem = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     const { product_id, quantity } = req.body;
@@ -50,7 +49,7 @@ export const updateCartItem = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const removeCartItem = async (req: AuthRequest, res: Response) => {
+export const removeCartItem = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     const { product_id } = req.params;
@@ -69,7 +68,7 @@ export const removeCartItem = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const mergeCart = async (req: AuthRequest, res: Response) => {
+export const mergeCart = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     const { items: localItems } = req.body;
@@ -107,7 +106,7 @@ export const mergeCart = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const clearCart = async (req: AuthRequest, res: Response) => {
+export const clearCart = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     await CartModel.clearUserCart(userId!);

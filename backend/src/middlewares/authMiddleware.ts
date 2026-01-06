@@ -29,5 +29,5 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
     const message = err instanceof jwt.TokenExpiredError ? "Token expirado" : "Token inválido";
     res.status(401).json({ error: message });
     return;
-}
+  }
 };

@@ -1,8 +1,8 @@
+import { Request } from "express";
 import { RequestHandler } from "express";
 import { productSchema } from "../schemas/productSchema";
 import { ProductModel } from "../models/productModel";
 import { logAction } from "../utils/auditLogger";
-import type { AuthRequest } from "../middlewares/authMiddleware";
 
 export const listProducts: RequestHandler = async (_req, res) => {
   try {
@@ -16,7 +16,7 @@ export const listProducts: RequestHandler = async (_req, res) => {
 
 export const createProduct: RequestHandler = async (req, res) => {
   try {
-    const authReq = req as AuthRequest;
+    const authReq = req as Request;
     const parseResult = productSchema.safeParse(req.body);
 
     if (!parseResult.success) {
@@ -60,7 +60,7 @@ export const getProductById: RequestHandler = async (req, res) => {
 
 export const updateProduct: RequestHandler = async (req, res) => {
   try {
-    const authReq = req as AuthRequest;
+    const authReq = req as Request;
     const { id } = req.params;
     
     const parseResult = productSchema.partial().safeParse(req.body);
@@ -101,7 +101,7 @@ export const updateProduct: RequestHandler = async (req, res) => {
 
 export const deleteProduct: RequestHandler = async (req, res) => {
   try {
-    const authReq = req as AuthRequest;
+    const authReq = req as Request;
     const { id } = req.params;
     if (!id) {
     return res.status(400).json({ error: "Falta el ID del producto" });
