@@ -48,3 +48,7 @@ jobs:
           RESEND_API_KEY: "re_123_fake"
           MP_ACCESS_TOKEN: "test_token"
           DATABASE_URL: "postgres://user:pass@localhost:5432/db_fake"
+          
+      - name: Deploy to Render
+        if: github.ref == 'refs/heads/main' && success()
+        run: curl "${{ secrets.RENDER_DEPLOY_HOOK }}"
