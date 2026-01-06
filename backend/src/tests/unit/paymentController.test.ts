@@ -2,6 +2,7 @@ import { createCheckoutSession, receiveWebhook } from '../../controllers/payment
 import { OrderModel } from '../../models/orderModel';
 import { AddressModel } from '../../models/addressModel';
 import { ProductModel } from '../../models/productModel';
+import { CartModel } from '../../models/cartModel';
 import { Preference, Payment } from 'mercadopago';
 import { Request, Response } from 'express';
 
@@ -9,6 +10,7 @@ import { Request, Response } from 'express';
 jest.mock('../../models/orderModel');
 jest.mock('../../models/addressModel');
 jest.mock('../../models/productModel');
+jest.mock('../../models/cartModel');
 
 jest.mock('mercadopago', () => {
   return {
@@ -124,6 +126,8 @@ describe('Payment Controller (Unit)', () => {
           { product_id: 'prod_B', quantity: 1 }
         ]
       });
+
+      (CartModel.clearUserCart as jest.Mock).mockResolvedValue(undefined);
 
       await receiveWebhook(req as Request, res as Response);
 
