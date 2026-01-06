@@ -4,6 +4,7 @@ import { OrderModel } from '../models/orderModel';
 import { AddressModel } from '../models/addressModel';
 import { ICreateOrder } from '../types/models';
 import { ProductModel } from '../models/productModel';
+import { CartModel } from '../models/cartModel';
 
 const SHIPPING_COST = 3990;
 
@@ -145,6 +146,8 @@ export const receiveWebhook = async (req: Request, res: Response) => {
                 console.log(`💰 Pago aprobado para orden ${orderId}. Descontando stock...`);
                 
                 await OrderModel.updateStatus(orderId, 'paid', paymentId);
+
+                await CartModel.clearUserCart(order.user_id);
 
                 if (order.items && Array.isArray(order.items)) {
                     for (const item of order.items) {
