@@ -6,6 +6,7 @@ import { useEffect, useState, Suspense } from "react";
 import { getOrderByIdAPI } from "@/lib/api/orders";
 import { useCartStore } from "@/store/useCartStore";
 import { formatCurrency } from "@/utils/formatCurrency";
+import { sendGTMEvent } from "@next/third-parties/google";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
@@ -42,6 +43,40 @@ function SuccessContent() {
 
     fetchOrder();
   }, [orderId, clearCart, router]);
+
+  useEffect(() => {
+    if (!order) return;
+
+    const validStatuses = [
+      "paid",
+      "pending",
+      "processing",
+      "shipped",
+      "delivered",
+      "approved",
+    ];
+
+    const isSuccess =
+      validStatuses.includes(order.status) || mpStatus === "approved";
+
+    if (isSuccess) {
+      sendGTMEvent({
+        event: "purchase",
+        ecommerce: {
+          transaction_id: order.id,
+          value: Number(order.total_amount || order.total),
+          currency: "CLP",
+          items: order.items?.map((item: any) => ({
+            item_id: item.product_id,
+            item_name: item.name,
+            price: Number(item.price),
+            quantity: Number(item.quantity),
+          })),
+        },
+      });
+      console.log("📡 Evento de conversión enviado a Google");
+    }
+  }, [order, mpStatus]);
 
   if (loading) {
     return (

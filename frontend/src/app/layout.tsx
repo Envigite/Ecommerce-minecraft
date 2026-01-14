@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import AuthInitializer from "@/components/auth/AuthInitializer";
+import { GoogleTagManager } from "@next/third-parties/google";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
     template: "%s | Fashion't Park",
     default: "Fashion't Park",
   },
-  description: "La mejor tienda de cubos y moda.",
+  description: "E-commerce inspirado en Minecraft",
 };
 
 export default function RootLayout({
@@ -32,6 +33,7 @@ export default function RootLayout({
         <AuthInitializer />
         {children}
       </body>
+      <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID || ""} />
     </html>
   );
 }
